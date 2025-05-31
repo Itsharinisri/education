@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduPlatform - Course Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to right, #6a11cb 0%, #2575fc 100%); /* Gradient background */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333; /* Default text color */
+        }
+        .navbar {
+            background-color: #2575fc !important; /* Primary color for navbar */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        .nav-link {
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover {
+            color: #ffffff !important;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 3rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container-content {
+            background-color: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 1200px; /* Max width for content */
+        }
+        .card {
+            border-radius: 0.75rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .card-body {
+            padding: 1.5rem;
+        }
+        .card-title {
+            font-weight: 600;
+            color: #2575fc;
+            margin-bottom: 0.75rem;
+        }
+        .card-text {
+            font-size: 0.95rem;
+            color: #555;
+        }
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+            transform: translateY(-2px);
+        }
+        /* Accordion specific styling */
+        .accordion-item {
+            border: none; /* Remove default accordion border */
+            border-radius: 0.75rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); /* Subtle shadow for items */
+            margin-bottom: 1rem; /* Space between accordion items */
+            overflow: hidden; /* Ensures rounded corners are applied */
+        }
+        .accordion-header .accordion-button {
+            background-color: #f8f9fa; /* Light background for header */
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            color: #333;
+            padding: 1rem 1.5rem;
+            transition: background-color 0.3s ease;
+        }
+        .accordion-header .accordion-button:not(.collapsed) {
+            background-color: #e9ecef; /* Slightly darker when open */
+            color: #2575fc;
+        }
+        .accordion-header .accordion-button:focus {
+            box-shadow: 0 0 0 0.25rem rgba(37, 117, 252, 0.25); /* Focus ring matching theme */
+        }
+        .accordion-body {
+            background-color: #fff;
+            padding: 1.5rem;
+            border-top: 1px solid #eee;
+        }
+        .accordion-body form {
+            padding: 1rem 0;
+        }
+        .accordion-body input[type="radio"] {
+            margin-right: 0.5rem;
+        }
+        .accordion-body label {
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+        }
+        footer {
+            background-color: #f8f9fa;
+            padding: 1.5rem 0;
+            text-align: center;
+            margin-top: auto; /* Push footer to the bottom */
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            color: #555;
+        }
+ 
+        /* Profile Icon and Dropdown Styling (copied from student-home-page-updated) */
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #6a11cb; /* A contrasting color */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .profile-avatar:hover {
+            background-color: #5a0eb0;
+            border-color: white;
+        }
+        .profile-dropdown {
+            position: absolute;
+            top: 60px; /* Adjust based on navbar height */
+            right: 10px;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); /* Stronger shadow for cohesion */
+            padding: 1rem;
+            width: 200px;
+            z-index: 1000; /* Ensure it's above other content */
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .profile-dropdown.show {
+            display: flex;
+        }
+        .profile-dropdown p {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+        .profile-dropdown .btn {
+            width: 100%;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            color: white; /* Ensure text is white on gradient */
+            border: none; /* Remove default border for gradient */
+            background-size: 200% auto; /* For hover animation */
+            transition: background-position 0.5s ease; /* Smooth hover */
+        }
+        /* Gradient for Change Password button in dropdown */
+        .profile-dropdown .btn-primary {
+            background-image: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+        }
+        .profile-dropdown .btn-primary:hover {
+            background-position: right center; /* Move gradient on hover */
+        }
+        /* Gradient for Logout button in dropdown */
+        .profile-dropdown .btn-logout {
+            background-image: linear-gradient(to right, #dc3545 0%, #ff6b6b 100%); /* Red to lighter red gradient */
+        }
+        .profile-dropdown .btn-logout:hover {
+            background-position: right center; /* Move gradient on hover */
+        }
+ 
+        /* Styling for the Submit button in the Change Password modal */
+        .modal-footer .btn-primary {
+            background-image: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+            border: none;
+            color: white;
+            background-size: 200% auto;
+            transition: background-position 0.5s ease;
+        }
+        .modal-footer .btn-primary:hover {
+            background-position: right center;
+        }
+ 
+        /* Custom message box styling (from courses-page) */
+        .alert {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 400px;
+            z-index: 1050;
+            border-radius: 0.5rem;
+        }
+		.student-message-section {
+		    position: relative; /* Make this a positioning context for the dropdown */
+		    margin-top: 2rem; /* Add some space above the section */
+		    width: 100%; /* Ensure it takes full width within its container */
+		    max-width: 1200px; /* Match the max-width of the main content */
+		}
+		
+		.query-form {
+		    position: absolute;
+		    top: calc(100% + 5px); /* Position below the button with a small gap */
+		    left: 0; /* Align with the left of the button */
+		    background-color: #f9f9f9;
+		    border: 1px solid #ccc;
+		    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+		    z-index: 1000; /* Ensure it's above other content */
+		    width: 100%; /* Adjust width as needed */
+            max-width: 800px; /* Make it wider for forum content */
+		    padding: 15px;
+		    border-radius: 5px;
+		    display: none; /* Initially hidden */
+		}
+		
+		.query-form.show-dropdown {
+		    display: block; /* Class to make it visible */
+		}
+		
+		.query-form .mb-3 {
+		    margin-bottom: 15px;
+		}
+		
+		.query-form .form-label {
+		    display: block;
+		    margin-bottom: 8px;
+		    font-weight: bold;
+		    color: #555;
+		}
+		
+		.query-form .form-select {
+		    width: 100%;
+		    padding: 10px;
+		    border: 1px solid #ddd;
+		    border-radius: 4px;
+		    font-size: 0.9rem;
+		    color: #333;
+		}
+		
+		.query-form .input-group {
+		    display: flex;
+		    gap: 8px;
+		}
+		
+		.query-form .form-control {
+		    flex-grow: 1;
+		    padding: 10px;
+		    border: 1px solid #ddd;
+		    border-radius: 4px;
+		    font-size: 0.9rem;
+		    color: #333;
+		}
+		
+		.query-form .btn-primary {
+		    padding: 10px 15px;
+		    border-radius: 4px;
+		    background-color: #007bff;
+		    color: white;
+		    border: none;
+		    cursor: pointer;
+		    font-size: 0.9rem;
+		    transition: background-color 0.3s ease;
+		}
+		
+		.query-form .btn-primary:hover {
+		    background-color: #0056b3;
+		}
+		
+		/* Style the "View and Post Queries" button */
+		.student-message-section button.btn-info {
+		    background-color: #17a2b8;
+		    color: white;
+		    border: none;
+		    padding: 10px 15px;
+		    border-radius: 5px;
+		    cursor: pointer;
+		    font-weight: 500;
+		    transition: background-color 0.3s ease;
+		}
+		
+		.student-message-section button.btn-info:hover {
+		    background-color: #138496;
+		}
+
+        /* Styling for the forum post list */
+        .forum-posts-list {
+            list-style: none;
+            padding: 0;
+        }
+        .forum-posts-list > li { /* Direct child li for main posts */
+            background-color: #f0f8ff;
+            border: 1px solid #e0efff;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .forum-posts-list > li.resolved {
+            background-color: #e6ffe6;
+            border-color: #d0ffd0;
+        }
+        .forum-posts-list .post-title {
+            font-weight: 600;
+            color: #2575fc;
+            margin-bottom: 0.25rem;
+        }
+        .forum-posts-list .post-content {
+            color: #555;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+        .forum-posts-list .post-meta {
+            font-size: 0.85rem;
+            color: #777;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .forum-posts-list .resolve-btn {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #333;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.3rem;
+            font-size: 0.8rem;
+            transition: background-color 0.3s ease;
+        }
+        .forum-posts-list .resolve-btn:hover {
+            background-color: #e0a800;
+            border-color: #d39e00;
+        }
+
+        /* Styling for replies */
+        .replies-section {
+            margin-top: 1rem;
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+        }
+        .replies-list {
+            list-style: none;
+            padding: 0;
+            margin-left: 1rem; /* Indent replies */
+        }
+        .replies-list li {
+            background-color: #fcfcfc;
+            border: 1px solid #f0f0f0;
+            border-left: 3px solid #2575fc; /* Accent border */
+            border-radius: 0.3rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .reply-meta {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 0.25rem;
+            text-align: right;
+        }
+        .reply-form-container {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            border-top: 1px dashed #eee;
+            background-color: #fcfcfc;
+            border-radius: 0.3rem;
+        }
+        .reply-form-container textarea {
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+ 
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/dashboard}">EduPlatform</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                	<li class="nav-item"> <a class="nav-link" th:href="@{/dashboard}">Dashboard</a></li>
+                    <li class="nav-item"> <a class="nav-link" th:href="@{/home}">Available Courses</a></li>
+                    <li class="nav-item"> <a class="nav-link" th:href="@{/enrolledCourses}">My Learning</a></li>
+                    <li class="nav-item ms-3">
+                        <div class="profile-avatar" id="profileAvatar" onclick="toggleProfileDropdown()">
+                            <span th:text="${user.name != null ? #strings.substring(user.name, 0, 1).toUpperCase() : 'U'}"></span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <div id="profileDropdown" class="profile-dropdown">
+        <p>Hello, <strong th:text="${user.name}">User</strong>!</p>
+        <button class="btn btn-primary rounded-pill" onclick="showChangePasswordModal()">Change Password</button>
+        <a class="btn btn-logout rounded-pill mt-2" th:href="@{/logout}">Logout</a>
+    </div>
+ 
+    <div id="changePasswordModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title">Change Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Current Password:</label>
+                        <input type="password" id="currentPassword" class="form-control rounded-pill">
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">New Password:</label>
+                        <input type="password" id="newPassword" class="form-control rounded-pill">
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm Password:</label>
+                        <input type="password" id="confirmPassword" class="form-control rounded-pill">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button class="btn btn-primary w-100 rounded-pill" onclick="submitPasswordChange()">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+ 
+    <main class="main-content">
+        <div class="container container-content">
+            <h2 class="text-center mb-4 display-5 fw-bold text-primary" th:text="${course.title}">Course Title</h2>
+            <p class="text-center lead text-muted mb-4">By <span th:text="${course.instructor.name}">Instructor Name</span></p>
+ 
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h4 class="card-title mb-3">About this Course</h4>
+                    <p class="card-text" th:text="${course.description}"></p>
+                </div>
+            </div>
+            
+ 
+           <h3 class="mb-4 text-secondary">Lessons</h3>
+            <div class="accordion" id="lessonAccordion">
+                <div th:each="lesson, iterStat : ${course.lessons}" class="accordion-item shadow-sm">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                th:attr="data-bs-target='#lesson-content-' + ${iterStat.index}">
+                            <span th:text="${lesson.title}">Lesson Title</span>
+                        </button>
+                    </h2>
+                    <div th:id="'lesson-content-' + ${iterStat.index}" class="accordion-collapse collapse" data-bs-parent="#lessonAccordion">
+                        <div class="accordion-body">
+                            <p th:text="${lesson.content}"></p>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(course.lessons)}" class="accordion-item">
+                    <div class="accordion-body text-center text-muted">
+                        No lessons available for this course yet.
+                    </div>
+                </div>
+            </div>
+ 
+            <h3 class="mt-5 mb-4 text-secondary">Quizzes</h3>
+            <div class="accordion" id="quizAccordion">
+                <div th:each="quiz, iterStat : ${course.quizzes}" class="accordion-item shadow-sm">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                th:attr="data-bs-target='#quiz-content-' + ${iterStat.index}">
+                            <span th:text="${quiz.question}">Quiz Question</span>
+                        </button>
+                    </h2>
+                    <div th:id="'quiz-content-' + ${iterStat.index}" class="accordion-collapse collapse" data-bs-parent="#quizAccordion">
+                        <div class="accordion-body">
+                             <form th:action="@{/submitQuiz}" method="post">
+                                <input type="hidden" th:value="${quiz.id}" name="quizId"/>
+                                
+                                <div th:each="option, optIndex : ${#strings.arraySplit(quiz.answerOptions, ',')}" class="form-check mb-2">
+                                    <input type="radio" class="form-check-input" th:id="${'option-' + quiz.id + '-' + optIndex}" name="answer" th:value="${option.trim()}" required/>
+                                    <label class="form-check-label" th:for="${'option-' + quiz.id + '-' + optIndex}" th:text="${option}"></label>
+                                </div>
+                            
+                                <button type="submit" class="btn btn-success mt-3 rounded-pill">Submit Quiz</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(course.quizzes)}" class="accordion-item">
+                    <div class="accordion-body text-center text-muted">
+                        No quizzes available for this course yet.
+                    </div>
+                </div>
+            </div>
+            <div class="student-message-section">
+		        <h4 class="mb-4 text-secondary">Student Queries & Discussion Forum</h4>
+		
+		        <button class="btn btn-info mb-2" onclick="toggleQueryForm()">View and Post Queries</button>
+		
+		        <div class="query-form" id="queryForm" style="display: none;">
+		            <div class="mb-3">
+		                <label class="form-label">Forum Discussions:</label>
+		                <ul class="forum-posts-list" id="forumPostsList">
+                            <li>Loading discussions...</li>
+                        </ul>
+		            </div>
+		
+		            <form id="postQueryForm" class="mt-4 p-3 border rounded">
+                        <input type="hidden" id="studentId" th:value="${user.id}"/>
+                        <input type="hidden" id="courseId" th:value="${course.id}"/>
+                        <h5>Post a New Question</h5>
+		                <div class="mb-3">
+		                    <label for="queryTitle" class="form-label">Question Title:</label>
+		                    <input type="text" class="form-control" id="queryTitle" required>
+		                </div>
+		                <div class="mb-3">
+		                    <label for="queryContent" class="form-label">Question Details:</label>
+		                    <textarea class="form-control" id="queryContent" rows="3" required></textarea>
+		                </div>
+		                <button type="submit" class="btn btn-primary">Submit Question</button>
+		            </form>
+		        </div>
+		    </div>
+        </div>
+    </main>
+ 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Profile Dropdown
+        function toggleProfileDropdown() {
+            document.getElementById('profileDropdown').classList.toggle('show');
+        }
+        window.onclick = function(event) {
+            if (!event.target.matches('.profile-avatar') && !event.target.matches('.profile-avatar span')) {
+                var dropdowns = document.getElementsByClassName("profile-dropdown");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+
+        // Change Password Modal (if you have one)
+        function showChangePasswordModal() {
+            var myModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+            myModal.show();
+        }
+
+        function submitPasswordChange() {
+            // Implement your password change logic here
+            alert('Password change functionality not implemented yet!');
+        }
+
+        // Student Query Form Toggle and Forum Logic
+        const queryForm = document.getElementById('queryForm');
+        const forumPostsList = document.getElementById('forumPostsList');
+        const courseId = /*[[${course.id}]]*/ null; // Get courseId from Thymeleaf context
+        const studentId = /*[[${user.id}]]*/ null; // Get studentId from Thymeleaf context
+
+        function toggleQueryForm() {
+            queryForm.classList.toggle('show-dropdown');
+            if (queryForm.classList.contains('show-dropdown')) {
+                loadForumPosts(); // Load posts when the form is shown
+            }
+        }
+
+        async function loadForumPosts() {
+            forumPostsList.innerHTML = '<li>Loading discussions...</li>'; // Show loading state
+            try {
+                const response = await fetch(`/api/forum-posts/course/${courseId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const posts = await response.json();
+                renderForumPosts(posts);
+            } catch (error) {
+                console.error('Error loading forum posts:', error);
+                forumPostsList.innerHTML = '<li>Error loading discussions. Please try again.</li>';
+            }
+        }
+
+        async function renderForumPosts(posts) {
+            forumPostsList.innerHTML = ''; // Clear previous posts
+            if (posts.length === 0) {
+                forumPostsList.innerHTML = '<li>No discussions started for this course yet.</li>';
+                return;
+            }
+            for (const post of posts) { // Use for...of for async operations inside loop
+                const li = document.createElement('li');
+                li.className = post.resolved ? 'resolved' : '';
+                li.innerHTML = `
+                    <div class="post-title">${post.title}</div>
+                    <div class="post-content">${post.content}</div>
+                    <div class="post-meta">
+                        <span>By ${post.student.name} on ${new Date(post.createdAt).toLocaleDateString()}</span>
+                        ${!post.resolved ? `<button class="resolve-btn btn btn-sm btn-warning" onclick="markPostResolved(${post.id})">Mark Resolved</button>` : `<span>Resolved by ${post.resolvedBy ? post.resolvedBy.name : 'N/A'}</span>`}
+                    </div>
+                    <div class="replies-section">
+                        <h6>Replies:</h6>
+                        <ul class="replies-list" id="replies-list-${post.id}">
+                            <li>Loading replies...</li>
+                        </ul>
+                        <div class="reply-form-container mt-3">
+                            <form class="reply-form" data-post-id="${post.id}">
+                                <div class="mb-2">
+                                    <textarea class="form-control" rows="2" placeholder="Write a reply..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-primary">Post Reply</button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                forumPostsList.appendChild(li);
+
+                // Load replies for each post
+                await loadAndRenderReplies(post.id, document.getElementById(`replies-list-${post.id}`));
+            }
+
+            // Attach event listeners to dynamically added reply forms
+            document.querySelectorAll('.reply-form').forEach(form => {
+                form.addEventListener('submit', handleReplyFormSubmit);
+            });
+        }
+
+        async function loadAndRenderReplies(postId, repliesListElement) {
+            repliesListElement.innerHTML = '<li>Loading replies...</li>';
+            try {
+                const response = await fetch(`/api/forum-replies/post/${postId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const replies = await response.json();
+                
+                repliesListElement.innerHTML = ''; // Clear loading message
+                if (replies.length === 0) {
+                    repliesListElement.innerHTML = '<li>No replies yet.</li>';
+                    return;
+                }
+                replies.forEach(reply => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        ${reply.content}
+                        <div class="reply-meta">Replied by ${reply.student.name} on ${new Date(reply.createdAt).toLocaleDateString()}</div>
+                    `;
+                    repliesListElement.appendChild(li);
+                });
+            } catch (error) {
+                console.error(`Error loading replies for post ${postId}:`, error);
+                repliesListElement.innerHTML = '<li>Error loading replies.</li>';
+            }
+        }
+
+        async function handleReplyFormSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const postId = form.dataset.postId;
+            const replyContent = form.querySelector('textarea').value;
+
+            if (!replyContent.trim()) {
+                alert('Reply content cannot be empty.');
+                return;
+            }
+
+            const replyData = {
+                studentId: studentId, // From Thymeleaf variable
+                postId: postId,
+                content: replyContent
+            };
+
+            try {
+                const response = await fetch('/api/forum-replies', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(replyData)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+
+                alert('Reply posted successfully!');
+                form.querySelector('textarea').value = ''; // Clear form
+                // Reload replies for this specific post
+                await loadAndRenderReplies(postId, document.getElementById(`replies-list-${postId}`));
+
+            } catch (error) {
+                console.error('Error posting reply:', error);
+                alert('Failed to post reply. Please try again.');
+            }
+        }
+
+
+        document.getElementById('postQueryForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const title = document.getElementById('queryTitle').value;
+            const content = document.getElementById('queryContent').value;
+
+            const postData = {
+                studentId: studentId,
+                courseId: courseId,
+                title: title,
+                content: content
+            };
+
+            try {
+                const response = await fetch('/api/forum-posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(postData)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+
+                alert('Question posted successfully!');
+                document.getElementById('queryTitle').value = ''; // Clear form
+                document.getElementById('queryContent').value = '';
+                loadForumPosts(); // Reload posts to show the new one
+
+            } catch (error) {
+                console.error('Error posting query:', error);
+                alert('Failed to post query. Please try again.');
+            }
+        });
+
+        async function markPostResolved(postId) {
+            if (!confirm('Are you sure you want to mark this post as resolved?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/forum-posts/${postId}/resolve`, {
+                    method: 'PUT',
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+
+                alert('Post marked as resolved!');
+                loadForumPosts(); // Reload posts to reflect the change
+            } catch (error) {
+                console.error('Error marking post as resolved:', error);
+                alert('Failed to mark post as resolved. Please try again.');
+            }
+        }
+        /*]]>*/
+    </script>
+    <footer class="mt-auto">
+        <div class="container">
+            <p>&copy; 2023 EduPlatform. All rights reserved.</p>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
